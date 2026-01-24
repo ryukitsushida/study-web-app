@@ -113,19 +113,23 @@ terraform apply
 ```bash
 cd ../..
 
+# ECR URL を取得（以下のいずれか）
+# - AWS コンソール > ECR > study-web-app-api から URI をコピー
+# - terraform output -raw ecr_repository_url
+# 例: 123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/study-web-app-api
+
 # ECR にログイン
-ECR_URL=$(cd infra/01-pre && terraform output -raw ecr_repository_url)
 aws ecr get-login-password --region ap-northeast-1 | \
-  docker login --username AWS --password-stdin ${ECR_URL%/*}
+  docker login --username AWS --password-stdin <アカウントID>.dkr.ecr.ap-northeast-1.amazonaws.com
 
 # イメージをビルド
 docker build -t study-web-app-api ./backend/fastapi
 
-# タグ付け（IMMUTABLE なのでバージョンタグ必須）
-docker tag study-web-app-api:latest ${ECR_URL}:v1.0.0
+# タグ付け
+docker tag study-web-app-api:latest <ECR_URL>:latest
 
 # プッシュ
-docker push ${ECR_URL}:v1.0.0
+docker push <ECR_URL>:latest
 ```
 
 ### Step 3: ECS + RDS 環境の作成
@@ -148,9 +152,9 @@ terraform init -backend-config=backend.hcl
 terraform workspace new dev
 
 # 必須変数を環境変数で設定
-export TF_VAR_image_tag="v1.0.0"
 export TF_VAR_db_password="your-secure-password"  # RDS パスワード
 export TF_VAR_allowed_origins="https://your-app.vercel.app,http://localhost:3000"  # CORS
+# TF_VAR_image_tag はデフォルト "latest" なので省略可
 
 # 適用（RDS + ECS が作成される）
 terraform plan
@@ -191,17 +195,17 @@ tfvars ファイルは使用しません。変数は以下の方法で設定：
 
 ```bash
 # 環境変数
-export TF_VAR_image_tag="v1.0.0"
 export TF_VAR_db_password="your-secure-password"
 export TF_VAR_allowed_origins="https://your-app.vercel.app,http://localhost:3000"
 
 # または実行時に指定
-terraform plan -var="image_tag=v1.0.0" -var="db_password=..." -var="allowed_origins=..."
+terraform plan -var="db_password=..." -var="allowed_origins=..."
 ```
 
 **注意**:
 - `DATABASE_URL` は RDS のエンドポイントから自動生成されます
 - `ALLOWED_ORIGINS` はカンマ区切りで複数指定可能です
+- `image_tag` はデフォルト `latest`（CI/CD 導入時にバージョンタグに変更推奨）
 
 ## 構成図
 

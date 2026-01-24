@@ -33,11 +33,8 @@
 ### 1. バックエンド + DB の起動
 
 ```bash
-# Docker Composeでバックエンドとデータベースを起動
+# Docker Composeでバックエンドとデータベースを起動（マイグレーション自動実行）
 docker compose up -d
-
-# マイグレーションの実行（初回のみ）
-docker compose exec api alembic upgrade head
 ```
 
 ### 2. フロントエンドの起動
@@ -165,18 +162,18 @@ terraform init -backend-config=backend.hcl
 terraform workspace new dev && terraform apply
 
 # 4. Docker イメージのビルドとプッシュ
+# ECR_URL は AWS コンソール > ECR > study-web-app-api からコピー
+# 例: 123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/study-web-app-api
 cd ../..
-ECR_URL=$(cd infra/01-pre && terraform output -raw ecr_repository_url)
-aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin ${ECR_URL%/*}
+aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin <アカウントID>.dkr.ecr.ap-northeast-1.amazonaws.com
 docker build -t study-web-app-api ./backend/fastapi
-docker tag study-web-app-api:latest ${ECR_URL}:v1.0.0
-docker push ${ECR_URL}:v1.0.0
+docker tag study-web-app-api:latest <ECR_URL>:latest
+docker push <ECR_URL>:latest
 
 # 5. ECS + RDS 環境の作成
 cd infra/02-main
 terraform init -backend-config=backend.hcl
 terraform workspace new dev
-export TF_VAR_image_tag="v1.0.0"
 export TF_VAR_db_password="your-secure-password"
 terraform apply
 

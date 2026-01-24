@@ -9,8 +9,9 @@ variable "db_password" {
 }
 
 variable "image_tag" {
-  description = "Docker image tag (set via TF_VAR_image_tag)"
+  description = "Docker image tag"
   type        = string
+  default     = "latest"
 }
 
 variable "allowed_origins" {
