@@ -120,6 +120,10 @@ alembic upgrade head
 │   │   └── types/               # TypeScript型定義
 │   ├── .prettierrc
 │   └── eslint.config.mjs
+├── infra/                       # Terraform (AWS)
+│   ├── 00-tfstate/              # Terraform state 管理用 S3
+│   ├── 01-pre/                  # 事前準備（ECR）
+│   └── 02-main/                 # メインインフラ（VPC, ECS, ALB）
 ├── docker-compose.yml           # バックエンド + DB
 ├── .vscode/                     # エディタ設定
 └── README.md
@@ -140,18 +144,53 @@ alembic upgrade head
 
 ### バックエンド (ECS)
 
-Dockerfileは本番環境（ECS）向けに最適化されています：
+Terraform を使用して AWS ECS (Fargate) にデプロイします。
+詳細な手順は [infra/README.md](./infra/README.md) を参照してください。
 
-- マルチステージビルド不要（Pythonのため）
-- 非rootユーザーで実行
-- ヘルスチェック設定済み
+#### クイックスタート
 
 ```bash
-# イメージのビルド
-docker build -t todo-api ./backend/fastapi
+# 1. AWS CLI の認証（SSO推奨）
+aws sso login --profile <your-profile>
+export AWS_PROFILE=<your-profile>
 
-# ECRへプッシュ（例）
-aws ecr get-login-password | docker login --username AWS --password-stdin <account>.dkr.ecr.<region>.amazonaws.com
-docker tag todo-api:latest <account>.dkr.ecr.<region>.amazonaws.com/todo-api:latest
-docker push <account>.dkr.ecr.<region>.amazonaws.com/todo-api:latest
+# 2. Terraform state 管理用リソースの作成
+cd infra/00-tfstate
+terraform init && terraform apply
+
+# 3. ECR リポジトリの作成
+cd ../01-pre
+# backend.hcl を作成（00-tfstate の出力値を設定）
+terraform init -backend-config=backend.hcl
+terraform workspace new dev && terraform apply
+
+# 4. Docker イメージのビルドとプッシュ
+cd ../..
+ECR_URL=$(cd infra/01-pre && terraform output -raw ecr_repository_url)
+aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin ${ECR_URL%/*}
+docker build -t study-web-app-api ./backend/fastapi
+docker tag study-web-app-api:latest ${ECR_URL}:v1.0.0
+docker push ${ECR_URL}:v1.0.0
+
+# 5. ECS + RDS 環境の作成
+cd infra/02-main
+terraform init -backend-config=backend.hcl
+terraform workspace new dev
+export TF_VAR_image_tag="v1.0.0"
+export TF_VAR_db_password="your-secure-password"
+terraform apply
+
+# 確認
+terraform output api_endpoint
+terraform output rds_endpoint
 ```
+
+#### 構成の特徴
+
+- S3 で tfstate 管理（native locking）
+- NAT Gateway 不使用（コスト削減）
+- Fargate でサーバーレス運用
+- ALB でロードバランシング
+- RDS PostgreSQL（プライベートサブネット）
+- VPC Flow Logs / CloudWatch Logs でログ管理
+- セキュリティ強化（IMMUTABLE タグ、読み取り専用FS、非root実行）
