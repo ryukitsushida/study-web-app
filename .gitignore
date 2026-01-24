@@ -40,3 +40,16 @@ htmlcov/
 
 # Docker
 postgres_data/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+backend.hcl
+.terraform/
+.terraform.lock.hcl
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
