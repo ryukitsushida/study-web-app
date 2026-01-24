@@ -32,6 +32,5 @@
   },
   "typescript.tsdk": "frontend/node_modules/typescript/lib",
   "python.analysis.extraPaths": ["./backend/fastapi"],
-  "ruff.lint.args": ["--config=backend/fastapi/pyproject.toml"],
-  "ruff.format.args": ["--config=backend/fastapi/pyproject.toml"]
+  "ruff.configuration": "backend/fastapi/pyproject.toml"
 }
