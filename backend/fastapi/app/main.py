@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import settings
 from app.routers import todos
 
 app = FastAPI(
@@ -9,10 +10,10 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS設定
+# CORS設定（環境変数 ALLOWED_ORIGINS で制御）
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
