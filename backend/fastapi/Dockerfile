@@ -1,5 +1,5 @@
 # ECSデプロイ用 Dockerfile
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 # 環境変数設定
 ENV PYTHONDONTWRITEBYTECODE=1 \
