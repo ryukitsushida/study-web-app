@@ -82,17 +82,54 @@ resource "aws_lb_target_group" "api" {
 }
 
 # ALB リスナー (HTTP)
+# HTTPS が有効な場合は HTTPS にリダイレクト、無効な場合は直接転送
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.api.arn
+    type = local.enable_https ? "redirect" : "forward"
+
+    # HTTPS リダイレクト（ドメイン設定時）
+    dynamic "redirect" {
+      for_each = local.enable_https ? [1] : []
+      content {
+        port        = "443"
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
+    }
+
+    # 直接転送（ドメイン未設定時）
+    target_group_arn = local.enable_https ? null : aws_lb_target_group.api.arn
   }
 
   tags = {
     Name = "${local.project}-http-listener"
+  }
+}
+
+# ALB リスナー (HTTPS)
+resource "aws_lb_listener" "https" {
+  count = local.enable_https ? 1 : 0
+
+  load_balancer_arn = aws_lb.main.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = aws_acm_certificate.main[0].arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.api.arn
+  }
+
+  depends_on = [
+    aws_acm_certificate_validation.main
+  ]
+
+  tags = {
+    Name = "${local.project}-https-listener"
   }
 }

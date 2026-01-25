@@ -152,9 +152,12 @@ terraform init -backend-config=backend.hcl
 terraform workspace new dev
 
 # 必須変数を環境変数で設定
-export TF_VAR_db_password="your-secure-password"  # RDS パスワード
-export TF_VAR_allowed_origins="https://your-app.vercel.app,http://localhost:3000"  # CORS
-# TF_VAR_image_tag はデフォルト "latest" なので省略可
+export TF_VAR_db_password="your-secure-password"
+
+# オプション: HTTPS を使う場合（ドメインが必要）
+# export TF_VAR_domain_name="api.example.com"
+# export TF_VAR_hosted_zone_id="Z1234567890ABC"
+# export TF_VAR_allowed_origins="https://your-app.vercel.app,http://localhost:3000"
 
 # 適用（RDS + ECS が作成される）
 terraform plan
@@ -193,19 +196,31 @@ env_config = {
 
 tfvars ファイルは使用しません。変数は以下の方法で設定：
 
+### 必須変数
+
 ```bash
-# 環境変数
+# 環境変数で設定
 export TF_VAR_db_password="your-secure-password"
+```
+
+### オプション変数
+
+```bash
+# HTTPS 使用時
+export TF_VAR_domain_name="api.example.com"
+export TF_VAR_hosted_zone_id="Z1234567890ABC"
+
+# CORS 設定
 export TF_VAR_allowed_origins="https://your-app.vercel.app,http://localhost:3000"
 
-# または実行時に指定
-terraform plan -var="db_password=..." -var="allowed_origins=..."
+# イメージタグ（デフォルト: latest）
+export TF_VAR_image_tag="latest"
 ```
 
 **注意**:
 - `DATABASE_URL` は RDS のエンドポイントから自動生成されます
 - `ALLOWED_ORIGINS` はカンマ区切りで複数指定可能です
-- `image_tag` はデフォルト `latest`（CI/CD 導入時にバージョンタグに変更推奨）
+- `domain_name` を設定すると HTTPS が有効になり、ACM 証明書と Route53 レコードが自動作成されます
 
 ## 構成図
 
@@ -242,6 +257,40 @@ terraform plan -var="db_password=..." -var="allowed_origins=..."
                                ▼
                           Internet
 ```
+
+## HTTPS の設定方法
+
+### 前提条件
+
+1. Route53 でドメインを管理している、または外部DNSでNSレコードをRoute53に向けている
+2. ホストゾーン ID を確認済み
+
+### 設定手順
+
+```bash
+# 1. ホストゾーン ID を確認
+aws route53 list-hosted-zones
+
+# 2. 変数を設定して apply
+export TF_VAR_domain_name="api.example.com"
+export TF_VAR_hosted_zone_id="Z1234567890ABC"
+terraform apply
+```
+
+### 証明書の検証
+
+ACM 証明書の DNS 検証は自動で行われますが、完了までに **5-10分** かかります。
+
+```bash
+# 証明書の状態確認
+terraform output certificate_status
+# ISSUED になれば完了
+```
+
+### アクセス
+
+- HTTP: `http://api.example.com` → 自動的に HTTPS へリダイレクト
+- HTTPS: `https://api.example.com`
 
 ## リソースの削除
 

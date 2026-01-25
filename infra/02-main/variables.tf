@@ -21,6 +21,22 @@ variable "allowed_origins" {
 }
 
 # =============================================================================
+# ドメイン設定（HTTPS使用時に必須）
+# =============================================================================
+
+variable "domain_name" {
+  description = "Domain name for the API (e.g., api.example.com). Leave empty for HTTP only."
+  type        = string
+  default     = ""
+}
+
+variable "hosted_zone_id" {
+  description = "Route53 hosted zone ID (required if domain_name is set)"
+  type        = string
+  default     = ""
+}
+
+# =============================================================================
 # オプション変数
 # =============================================================================
 

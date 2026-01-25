@@ -40,7 +40,12 @@ output "ecs_service_name" {
 
 output "api_endpoint" {
   description = "API endpoint URL"
-  value       = "http://${aws_lb.main.dns_name}"
+  value       = local.enable_https ? "https://${var.domain_name}" : "http://${aws_lb.main.dns_name}"
+}
+
+output "api_domain" {
+  description = "API domain name (if configured)"
+  value       = local.enable_https ? var.domain_name : null
 }
 
 output "ecr_repository_url" {
@@ -60,4 +65,18 @@ output "rds_endpoint" {
 output "rds_db_name" {
   description = "RDS database name"
   value       = aws_db_instance.main.db_name
+}
+
+# =============================================================================
+# SSL/TLS
+# =============================================================================
+
+output "certificate_arn" {
+  description = "ACM certificate ARN (if HTTPS enabled)"
+  value       = local.enable_https ? aws_acm_certificate.main[0].arn : null
+}
+
+output "certificate_status" {
+  description = "ACM certificate status (if HTTPS enabled)"
+  value       = local.enable_https ? aws_acm_certificate.main[0].status : null
 }
