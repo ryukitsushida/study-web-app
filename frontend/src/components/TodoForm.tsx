@@ -22,7 +22,10 @@ export default function TodoForm({ onSubmit }: TodoFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white rounded-xl shadow-sm border border-gray-100 p-4"
+    >
       <div className="flex gap-3">
         <div className="w-5 h-5 mt-2 rounded-full border-2 border-dashed border-gray-300 flex-shrink-0" />
         <div className="flex-1">
