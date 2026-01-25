@@ -27,7 +27,7 @@
 ### 必要な環境
 
 - Node.js 18+
-- Python 3.12+
+- Python 3.13+
 - Docker & Docker Compose
 
 ### 1. バックエンド + DB の起動
