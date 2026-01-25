@@ -7,6 +7,9 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/todo_db
+      - ENABLE_RELOAD=true
+    volumes:
+      - ./backend/fastapi/app:/app/app
     depends_on:
       db:
         condition: service_healthy
