@@ -34,6 +34,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Type check
+        run: npx tsc --noEmit
+
       - name: Run ESLint
         run: npm run lint
 
@@ -45,6 +48,3 @@ jobs:
         env:
           # ビルド時にAPI URLが必要な場合は環境変数を設定
           NEXT_PUBLIC_API_URL: http://localhost:8000
-
-      - name: Type check
-        run: npx tsc --noEmit
