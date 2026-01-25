@@ -39,4 +39,3 @@ class TodoCRUD:
         result = await self.db.execute(stmt)
         await self.db.flush()
         return result.rowcount > 0
-

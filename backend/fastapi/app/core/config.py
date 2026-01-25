@@ -3,9 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # 非同期用（postgresql+asyncpg://）。Alembic・アプリ共通。
-    database_url: str = (
-        "postgresql+asyncpg://postgres:postgres@localhost:5432/todo_db"
-    )
+    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/todo_db"
 
     # CORS設定（カンマ区切りで複数指定可能）
     allowed_origins: str = "http://localhost:3000"

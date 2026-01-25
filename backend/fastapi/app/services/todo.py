@@ -21,9 +21,7 @@ class TodoService:
     async def update_todo(
         self, todo_id: int, data: UpdateTodoRequest
     ) -> TodoModel | None:
-        return await self._crud.update(
-            todo_id, data.model_dump(exclude_unset=True)
-        )
+        return await self._crud.update(todo_id, data.model_dump(exclude_unset=True))
 
     async def delete_todo(self, todo_id: int) -> bool:
         return await self._crud.delete(todo_id)
