@@ -123,7 +123,7 @@ resource "aws_ecs_task_definition" "api" {
       environment = [
         {
           name  = "DATABASE_URL"
-          value = "postgresql://${aws_db_instance.main.username}:${var.db_password}@${aws_db_instance.main.endpoint}/${aws_db_instance.main.db_name}"
+          value = "postgresql+asyncpg://${aws_db_instance.main.username}:${var.db_password}@${aws_db_instance.main.endpoint}/${aws_db_instance.main.db_name}"
         },
         {
           name  = "ALLOWED_ORIGINS"

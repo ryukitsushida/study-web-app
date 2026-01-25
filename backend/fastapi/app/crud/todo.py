@@ -1,43 +1,42 @@
-from sqlalchemy.orm import Session
+from sqlalchemy import delete, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.models import TodoModel
 
 
 class TodoCRUD:
-    def __init__(self, db: Session) -> None:
+    def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
-    def get_list(self) -> list[TodoModel]:
-        return (
-            self.db.query(TodoModel)
-            .order_by(TodoModel.created_at.desc())
-            .all()
+    async def get_list(self) -> list[TodoModel]:
+        result = await self.db.execute(
+            select(TodoModel).order_by(TodoModel.created_at.desc())
         )
+        return list(result.scalars().all())
 
-    def get_by_id(self, todo_id: int) -> TodoModel | None:
-        return self.db.query(TodoModel).filter(TodoModel.id == todo_id).first()
+    async def get_by_id(self, todo_id: int) -> TodoModel | None:
+        return await self.db.get(TodoModel, todo_id)
 
-    def create(self, data: dict) -> TodoModel:
+    async def create(self, data: dict) -> TodoModel:
         todo = TodoModel(**data)
         self.db.add(todo)
-        self.db.commit()
-        self.db.refresh(todo)
+        await self.db.flush()
+        await self.db.refresh(todo)
         return todo
 
-    def update(self, todo_id: int, data: dict) -> TodoModel | None:
-        todo = self.get_by_id(todo_id)
+    async def update(self, todo_id: int, data: dict) -> TodoModel | None:
+        todo = await self.get_by_id(todo_id)
         if not todo:
             return None
         for key, value in data.items():
             setattr(todo, key, value)
-        self.db.commit()
-        self.db.refresh(todo)
+        await self.db.flush()
+        await self.db.refresh(todo)
         return todo
 
-    def delete(self, todo_id: int) -> bool:
-        todo = self.get_by_id(todo_id)
-        if not todo:
-            return False
-        self.db.delete(todo)
-        self.db.commit()
-        return True
+    async def delete(self, todo_id: int) -> bool:
+        stmt = delete(TodoModel).where(TodoModel.id == todo_id)
+        result = await self.db.execute(stmt)
+        await self.db.flush()
+        return result.rowcount > 0
+

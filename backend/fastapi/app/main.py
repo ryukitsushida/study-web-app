@@ -24,6 +24,6 @@ app.include_router(todos.router, prefix="/api")
 
 
 @app.get("/health")
-def health_check():
+async def health_check():
     """ヘルスチェック用エンドポイント"""
     return {"status": "healthy"}

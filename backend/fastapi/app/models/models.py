@@ -7,7 +7,9 @@ from app.database import Base
 
 
 def _utc_now() -> datetime:
-    return datetime.now(UTC)
+    # DB の TIMESTAMP WITHOUT TIME ZONE 用に、UTC の「naive」を返す。
+    # timezone-aware を渡すと asyncpg が "can't subtract offset-naive and offset-aware" で落ちる。
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 class TodoModel(Base):
