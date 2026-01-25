@@ -110,27 +110,46 @@ terraform apply
 
 ### Step 2: Docker イメージのビルドとプッシュ
 
+Mac（Apple Silicon）でビルドする場合は **`--platform linux/amd64`** を付けてください。
+
 ```bash
 cd ../..
 
-# ECR URL を取得（以下のいずれか）
-# - AWS コンソール > ECR > study-web-app-api から URI をコピー
-# - terraform output -raw ecr_repository_url
+# ECR URL を取得（02-main で apply 済みなら）
+cd infra/02-main && ECR_URL=$(terraform output -raw ecr_repository_url) && cd ../..
+
+# または AWS コンソール > ECR > study-web-app-api から URI をコピー
 # 例: 123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/study-web-app-api
 
-# ECR にログイン
+# ECR にログイン（プロファイル使用時は --profile <profile> を付ける）
 aws ecr get-login-password --region ap-northeast-1 | \
   docker login --username AWS --password-stdin <アカウントID>.dkr.ecr.ap-northeast-1.amazonaws.com
 
-# イメージをビルド
-docker build -t study-web-app-api ./backend/fastapi
-
-# タグ付け
-docker tag study-web-app-api:latest <ECR_URL>:latest
-
-# プッシュ
-docker push <ECR_URL>:latest
+# イメージを linux/amd64 でビルドしてそのままプッシュ（推奨）
+docker buildx build --platform linux/amd64 \
+  -t <ECR_URL>:latest \
+  --provenance=false \
+  --push \
+  backend/fastapi
 ```
+
+- `--provenance=false` は、ECR が attestation マニフェストを扱わない場合の 403 を避けるために付けています。不要なら省略可です。
+- 既存の `docker build` + `docker push` だけ使う場合は、`docker build --platform linux/amd64` でビルドしたうえでタグ付け・プッシュしてください。
+
+**イメージ push 後の ECS 更新**
+
+`latest` を上書きしても ECS は自動では取りに行かないため、**強制再デプロイ**で新しいイメージを反映します。
+
+```bash
+aws ecs update-service \
+  --cluster study-web-app-cluster \
+  --service study-web-app-api-service \
+  --force-new-deployment \
+  --region ap-northeast-1
+```
+
+（プロファイル使用時は `--profile <profile>` を付けてください。）  
+数分待てば新しいタスクが起動し、ALB 経由で疎通できます。
 
 ### Step 3: ECS + RDS 環境の作成
 
