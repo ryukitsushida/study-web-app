@@ -17,8 +17,7 @@ resource "aws_db_instance" "main" {
   identifier = "${local.project}-db"
 
   # エンジン設定
-  engine                = "postgres"
-  engine_version        = "16.4"
+  engine = "postgres"
   instance_class        = local.config.rds_instance_class
   allocated_storage     = 20
   max_allocated_storage = 100 # ストレージ自動スケーリング
