@@ -1,0 +1,10 @@
+# 開発用依存関係
+-r requirements.txt
+
+# Linter & Formatter
+ruff
+
+# Testing
+pytest
+pytest-asyncio
+httpx
