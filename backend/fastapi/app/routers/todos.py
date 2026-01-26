@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.exceptions import TodoNotFound
 from app.schemas.todo import (
     CreateTodoRequest,
     CreateTodoResponse,
@@ -25,9 +26,7 @@ async def get_todo(todo_id: int, db: AsyncSession = Depends(get_db)):
     """指定IDのTODOを取得"""
     todo = await TodoService(db).get_todo(todo_id)
     if not todo:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="TODO not found"
-        )
+        raise TodoNotFound()
     return todo
 
 
@@ -44,9 +43,7 @@ async def update_todo(
     """TODOを更新"""
     todo = await TodoService(db).update_todo(todo_id, todo_data)
     if not todo:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="TODO not found"
-        )
+        raise TodoNotFound()
     return todo
 
 
@@ -54,7 +51,5 @@ async def update_todo(
 async def delete_todo(todo_id: int, db: AsyncSession = Depends(get_db)):
     """TODOを削除"""
     if not await TodoService(db).delete_todo(todo_id):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="TODO not found"
-        )
+        raise TodoNotFound()
     return None
