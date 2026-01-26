@@ -57,6 +57,4 @@ async def delete_todo(todo_id: int, db: AsyncSession = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="TODO not found"
         )
-    # 204 は response 送信後に cleanup が走るため、ここで commit してから返す
-    await db.commit()
     return None

@@ -12,7 +12,7 @@ class TodoCRUD:
         result = await self.db.execute(
             select(TodoModel).order_by(TodoModel.created_at.desc())
         )
-        return list(result.scalars().all())
+        return list[TodoModel](result.scalars().all())
 
     async def get_by_id(self, todo_id: int) -> TodoModel | None:
         return await self.db.get(TodoModel, todo_id)
