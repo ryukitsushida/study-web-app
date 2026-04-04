@@ -6,7 +6,7 @@
 
 ### フロントエンド
 
-- Next.js 15 (App Router)
+- Next.js 16 (App Router)
 - TypeScript
 - Tailwind CSS
 - ESLint + Prettier
@@ -26,7 +26,7 @@
 
 ### 必要な環境
 
-- Node.js 18+
+- Node.js 20.9.0+
 - Python 3.13+
 - Docker & Docker Compose
 
@@ -99,13 +99,26 @@ alembic upgrade head
 │   └── fastapi/
 │       ├── app/
 │       │   ├── main.py          # FastAPIアプリケーション
-│       │   ├── config.py        # 設定
 │       │   ├── database.py      # DB接続
-│       │   ├── models.py        # SQLAlchemyモデル
-│       │   ├── schemas.py       # Pydanticスキーマ
-│       │   └── routers/
-│       │       └── todos.py     # TODOエンドポイント
+│       │   ├── core/
+│       │   │   └── config.py    # 設定
+│       │   ├── crud/
+│       │   │   └── todo.py      # DB操作
+│       │   ├── exceptions/      # 例外定義
+│       │   ├── models/
+│       │   │   └── models.py    # SQLAlchemyモデル
+│       │   ├── routers/
+│       │   │   └── todos.py     # TODOエンドポイント
+│       │   ├── schemas/
+│       │   │   └── todo/        # Pydanticスキーマ
+│       │   │       ├── base.py
+│       │   │       ├── request.py
+│       │   │       └── response.py
+│       │   └── services/
+│       │       └── todo.py      # ビジネスロジック
 │       ├── alembic/             # マイグレーション
+│       ├── alembic.ini
+│       ├── entrypoint.sh
 │       ├── Dockerfile           # ECSデプロイ用
 │       ├── requirements.txt
 │       └── pyproject.toml       # Ruff設定
