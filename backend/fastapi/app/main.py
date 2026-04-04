@@ -22,9 +22,7 @@ async def app_exception_handler(request: Request, exc: Exception) -> JSONRespons
         return JSONResponse(status_code=500, content={"detail": exc.detail})
     if isinstance(exc, AppException):
         return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
-    return JSONResponse(
-        status_code=500, content={"detail": "Internal server error"}
-    )
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
 # CORS設定（環境変数 ALLOWED_ORIGINS で制御）

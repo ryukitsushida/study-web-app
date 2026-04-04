@@ -11,4 +11,4 @@ class CreateTodoRequest(BaseTodoRequest):
 
 class UpdateTodoRequest(BaseTodoRequest):
     title: Annotated[str | None, Field(min_length=1, max_length=255)] = None
-    completed: Annotated[bool | None, Field(default=None)] = None
+    completed: Annotated[bool | None, Field()] = None
