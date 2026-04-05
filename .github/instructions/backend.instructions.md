@@ -65,7 +65,7 @@ backend/fastapi/app/
 
 - **テストフレームワーク**: pytest + pytest-asyncio + httpx (`AsyncClient`)
 - **単体テスト**: Service / CRUD 層のロジックを個別にテストする。DB はテスト用の PostgreSQL またはインメモリ SQLite を使用する
-- **API テスト**: `httpx.AsyncClient` で FastAPI の TestClient 経由でエンドポイントを検証する
+- **API テスト**: `httpx.AsyncClient` を ASGI アプリ（FastAPI）に接続してエンドポイントを検証する
 - **テストファイル配置**: `tests/` ディレクトリに `test_<module>.py` で配置する
 - **フィクスチャ**: DB セッション・テストクライアントは `conftest.py` で共通定義する
 - **カバレッジ目標**: Service 層 80% 以上、Router 層は主要パス (正常系 + 主要エラー系) をカバーする

@@ -34,8 +34,10 @@ infra/
 ## ③ アーキテクチャ・設計指針
 
 - **ネットワーク構成**:
-  - Public Subnet (2 AZ): ALB + ECS タスク
-  - Private Subnet (2 AZ): RDS
+  - Public Subnet (2 AZ): ALB のみ
+  - Private Subnet (2 AZ): ECS タスク + RDS
+  - ECS タスクのアウトバウンドが必要な場合は、NAT Gateway または VPC Endpoint を利用する
+  - 例外（学習用/dev）として ECS タスクを Public Subnet に置く場合は、その理由を明記し、Security Group 等で到達範囲を最小化する
   - セキュリティグループはリソース間の参照で最小権限を維持する (`ALB → ECS:8000 → RDS:5432`)
 - **設定の一元管理**: `locals.tf` に環境別設定 (`terraform.workspace` ベース) を集約する。ハードコードを避ける
 - **変数設計**: 機密情報 (`db_password`) は `sensitive = true`。オプション機能 (`enable_vpc_flow_logs` 等) はフラグで制御する
