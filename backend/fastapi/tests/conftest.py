@@ -18,10 +18,12 @@ def postgres_container():
 
 
 @pytest.fixture(scope="session")
-def async_engine(postgres_container):
+async def async_engine(postgres_container):
     url = make_url(postgres_container.get_connection_url())
     async_url = url.set(drivername="postgresql+asyncpg")
-    return create_async_engine(async_url, echo=False, poolclass=NullPool)
+    engine = create_async_engine(async_url, echo=False, poolclass=NullPool)
+    yield engine
+    await engine.dispose()
 
 
 @pytest.fixture
