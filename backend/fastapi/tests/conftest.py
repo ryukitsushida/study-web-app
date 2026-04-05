@@ -3,6 +3,7 @@ from collections.abc import AsyncIterator
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import NullPool
+from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from testcontainers.postgres import PostgresContainer
 
@@ -18,8 +19,8 @@ def postgres_container():
 
 @pytest.fixture(scope="session")
 def async_engine(postgres_container):
-    url = postgres_container.get_connection_url()
-    async_url = url.replace("postgresql+psycopg2://", "postgresql+asyncpg://")
+    url = make_url(postgres_container.get_connection_url())
+    async_url = url.set(drivername="postgresql+asyncpg")
     return create_async_engine(async_url, echo=False, poolclass=NullPool)
 
 

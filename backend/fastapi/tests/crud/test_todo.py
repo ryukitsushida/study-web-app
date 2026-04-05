@@ -33,7 +33,7 @@ class TestTodoCRUDGetList:
         todos = await crud.get_list()
 
         assert len(todos) == 3
-        # created_at 降順で返却されることを確認
+        # created_at DESC, id DESC で返却されることを確認
         assert todos[0].title == "タスク3"
         assert todos[1].title == "タスク2"
         assert todos[2].title == "タスク1"
