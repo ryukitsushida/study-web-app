@@ -45,7 +45,7 @@ describe("fetchApi", () => {
         headers: expect.objectContaining({
           "Content-Type": "application/json",
         }),
-      }),
+      })
     );
   });
 });
@@ -83,7 +83,7 @@ describe("todoApi.create", () => {
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ title: "テストタスク", description: "テストの説明" }),
-      }),
+      })
     );
     expect(result).toEqual(mockTodo);
   });
@@ -101,7 +101,7 @@ describe("todoApi.update", () => {
       expect.objectContaining({
         method: "PATCH",
         body: JSON.stringify({ title: "更新タスク" }),
-      }),
+      })
     );
     expect(result).toEqual(updatedTodo);
   });
@@ -120,7 +120,7 @@ describe("todoApi.delete", () => {
       `${API_BASE_URL}/todos/1`,
       expect.objectContaining({
         method: "DELETE",
-      }),
+      })
     );
   });
 });

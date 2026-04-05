@@ -28,7 +28,7 @@ describe("TodoItem", () => {
         onToggle={mockOnToggle}
         onDelete={mockOnDelete}
         onUpdate={mockOnUpdate}
-      />,
+      />
     );
 
   it("タイトルと説明が表示される", () => {

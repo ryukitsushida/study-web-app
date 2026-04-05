@@ -15,6 +15,7 @@ applyTo: "frontend/**"
 | Linter         | ESLint v9 (flat config) | `eslint-config-next`          |
 | Formatter      | Prettier                | 3.x                           |
 | 最適化         | React Compiler          | `babel-plugin-react-compiler` |
+| テスト         | Jest + React Testing Library | `jest-environment-jsdom`  |
 
 ## ② ディレクトリ構成
 
@@ -43,7 +44,10 @@ frontend/src/
 ## ④ テスト方針
 
 - **テストフレームワーク**: Jest + React Testing Library を使用する
+- **テスト環境設定**: `jest.config.ts` で `next/jest` を使用し、`jest.setup.ts` で `@testing-library/jest-dom` を読み込む
 - **単体テスト**: 各コンポーネントに対して props のバリエーションとユーザーインタラクションをテストする
-- **結合テスト**: API クライアント (`lib/api.ts`) は MSW (Mock Service Worker) でモックし、コンポーネントの API 連携を検証する
-- **テストファイル配置**: テスト対象と同階層に `__tests__/` ディレクトリを作成するか、`*.test.tsx` で配置する
+- **API クライアントテスト**: `global.fetch` をモックし、各 API メソッドのリクエスト内容とレスポンス処理を検証する
+- **結合テスト**: `jest.mock` で API モジュールをモックし、コンポーネントの API 連携を検証する
+- **テストファイル配置**: テスト対象と同階層に `__tests__/` ディレクトリを作成し、`*.test.ts(x)` で配置する
+- **テスト実行コマンド**: `npm test`（単発）、`npm run test:watch`（ウォッチモード）、`npm run test:coverage`（カバレッジ）
 - **カバレッジ目標**: ビジネスロジックを含むコンポーネント 80% 以上

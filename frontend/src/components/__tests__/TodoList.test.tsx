@@ -64,7 +64,7 @@ describe("TodoList", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("タスクがありません。新しいタスクを追加してください。"),
+        screen.getByText("タスクがありません。新しいタスクを追加してください。")
       ).toBeInTheDocument();
     });
   });
