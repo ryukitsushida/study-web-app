@@ -1,7 +1,10 @@
+from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    model_config = ConfigDict(env_file=".env")
+
     # 非同期用（postgresql+asyncpg://）。Alembic・アプリ共通。
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/todo_db"
 
@@ -12,9 +15,6 @@ class Settings(BaseSettings):
     def cors_origins(self) -> list[str]:
         """CORS許可オリジンをリストで返す"""
         return [origin.strip() for origin in self.allowed_origins.split(",")]
-
-    class Config:
-        env_file = ".env"
 
 
 settings = Settings()

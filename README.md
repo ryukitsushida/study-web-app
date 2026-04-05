@@ -89,6 +89,9 @@ alembic revision --autogenerate -m "description"
 
 # マイグレーションの実行
 alembic upgrade head
+
+# テスト（Docker 起動が必要）
+python -m pytest tests/ -v
 ```
 
 ## プロジェクト構造
@@ -116,6 +119,11 @@ alembic upgrade head
 │       │   │       └── response.py
 │       │   └── services/
 │       │       └── todo.py      # ビジネスロジック
+│       ├── tests/               # テスト (Testcontainers PostgreSQL)
+│       │   ├── conftest.py      # 共通フィクスチャ
+│       │   ├── crud/            # CRUD 層テスト
+│       │   ├── services/        # Service 層テスト
+│       │   └── routers/         # Router 層テスト
 │       ├── alembic/             # マイグレーション
 │       ├── alembic.ini
 │       ├── entrypoint.sh
