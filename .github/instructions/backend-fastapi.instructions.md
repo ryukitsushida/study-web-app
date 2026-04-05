@@ -1,8 +1,8 @@
 ---
-applyTo: "backend/**"
+applyTo: "backend/fastapi/**"
 ---
 
-# Backend 指示
+# Backend (FastAPI) 指示
 
 ## ① 技術スタック
 

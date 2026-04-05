@@ -1,5 +1,5 @@
 services:
-  api:
+  fastapi:
     build:
       context: ./backend/fastapi
       dockerfile: Dockerfile
@@ -14,6 +14,26 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+    profiles:
+      - fastapi
+
+  hono:
+    build:
+      context: ./backend/hono
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/todo_db
+      - PORT=8001
+    volumes:
+      - ./backend/hono/src:/app/src
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - hono
 
   db:
     image: postgres:16-alpine
