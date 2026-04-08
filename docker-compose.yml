@@ -36,6 +36,23 @@ services:
     profiles:
       - hono
 
+  gin:
+    build:
+      context: ./backend/gin
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/todo_db
+      - PORT=8002
+      - GIN_MODE=release
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - gin
+
   db:
     image: postgres:16-alpine
     ports:

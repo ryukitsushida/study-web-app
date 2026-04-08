@@ -1,0 +1,9 @@
+# Binary
+/server
+/gin
+
+# Environment
+.env
+
+# Test
+coverage.out

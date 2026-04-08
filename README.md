@@ -25,9 +25,16 @@
 - Zod (バリデーション)
 - Vitest (テスト)
 
+### バックエンド（Gin / Go）
+
+- Gin (Go Web フレームワーク)
+- GORM (ORM / gorm/driver/postgres)
+- go-playground/validator (バリデーション)
+- testcontainers-go (テスト)
+
 ### データベース
 
-- PostgreSQL 16（FastAPI / Hono で共有）
+- PostgreSQL 16（FastAPI / Hono / Gin で共有）
 
 ## 開発環境のセットアップ
 
@@ -35,6 +42,7 @@
 
 - Node.js 20.9.0+
 - Python 3.13+
+- Go 1.24+
 - Docker & Docker Compose
 
 ### 1. バックエンド + DB の起動
@@ -48,15 +56,19 @@ docker compose --profile fastapi up -d
 # Hono で起動
 docker compose --profile hono up -d
 
+# Gin (Go) で起動
+docker compose --profile gin up -d
+
 # 両方同時に起動（FastAPI: 8000, Hono: 8001）
 docker compose --profile fastapi --profile hono up -d
 
 # 停止
 docker compose --profile fastapi down
 docker compose --profile hono down
+docker compose --profile gin down
 ```
 
-> **NOTE:** DB は常に起動します。FastAPI と Hono は同じ PostgreSQL（todo_db）を共有します。
+> **NOTE:** DB は常に起動します。FastAPI、Hono、Gin は同じ PostgreSQL（todo_db）を共有します。
 
 ### 2. フロントエンドの起動
 
@@ -81,6 +93,9 @@ NEXT_PUBLIC_API_URL=http://localhost:8000/api
 
 # Hono に接続
 NEXT_PUBLIC_API_URL=http://localhost:8001/api
+
+# Gin (Go) に接続
+NEXT_PUBLIC_API_URL=http://localhost:8002/api
 ```
 
 ### 3. アクセス
@@ -91,6 +106,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8001/api
 | FastAPI              | http://localhost:8000      |
 | FastAPI ドキュメント | http://localhost:8000/docs |
 | Hono API             | http://localhost:8001      |
+| Gin (Go) API         | http://localhost:8002      |
 
 ## 開発コマンド
 
@@ -152,6 +168,27 @@ npm run typecheck
 > **NOTE:** DB マイグレーションは FastAPI 側の Alembic で管理します。
 > Hono 側でスキーマ変更を反映するには `npm run prisma:pull && npm run prisma:generate` を実行してください。
 
+### バックエンド（Gin / Go）
+
+```bash
+cd backend/gin
+
+# ローカル開発サーバー
+go run ./cmd/server
+
+# ビルド
+go build -o server ./cmd/server
+
+# テスト（Docker 起動が必要）
+go test ./tests/ -v -timeout 120s
+
+# フォーマット
+gofmt -w .
+```
+
+> **NOTE:** DB マイグレーションは FastAPI 側の Alembic で管理します。
+> Gin 側では GORM の AutoMigrate を開発・テスト用に使用しています。
+
 ## プロジェクト構造
 
 ```
@@ -194,6 +231,19 @@ npm run typecheck
 │       ├── prisma/
 │       │   └── schema.prisma
 │       └── Dockerfile
+│   └── gin/
+│       ├── cmd/
+│       │   └── server/
+│       │       └── main.go      # サーバー起動エントリポイント
+│       ├── internal/
+│       │   ├── config/          # 環境変数管理
+│       │   ├── handler/         # HTTP ハンドラ
+│       │   ├── middleware/      # CORS ミドルウェア
+│       │   ├── model/           # DB モデル + リクエスト/レスポンス型
+│       │   ├── repository/      # DB 操作（CRUD）
+│       │   └── router/          # ルート定義
+│       ├── tests/               # テスト (testcontainers-go)
+│       └── Dockerfile
 ├── frontend/
 │   ├── src/
 │   │   ├── app/                 # Next.js App Router
@@ -205,7 +255,7 @@ npm run typecheck
 │   ├── 00-tfstate/              # Terraform state 管理用 S3
 │   ├── 01-pre/                  # 事前準備（ECR）
 │   └── 02-main/                 # メインインフラ（VPC, ECS, ALB）
-├── docker-compose.yml           # profiles: fastapi / hono
+├── docker-compose.yml           # profiles: fastapi / hono / gin
 └── README.md
 ```
 
