@@ -28,6 +28,7 @@ services:
       - PORT=8000
     volumes:
       - ./backend/hono/src:/app/src
+    command: sh -c "npx prisma generate && exec npx tsx src/index.ts"
     depends_on:
       db:
         condition: service_healthy
