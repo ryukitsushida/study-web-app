@@ -10,6 +10,7 @@
 - TypeScript
 - Tailwind CSS
 - ESLint + Prettier
+- Jest + React Testing Library（テスト）
 
 ### バックエンド（FastAPI）
 
@@ -107,6 +108,15 @@ npm run lint
 
 # フォーマット
 npx prettier --write .
+
+# テスト
+npm test
+
+# テスト（ウォッチモード）
+npm run test:watch
+
+# テスト（カバレッジ）
+npm run test:coverage
 ```
 
 ### バックエンド（FastAPI）
