@@ -21,9 +21,11 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         List<String> origins = Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
+                .filter(s -> !s.isEmpty())
                 .toList();
         config.setAllowedOrigins(origins);
         config.setAllowCredentials(true);
+        // 開発用途のため全メソッド・全ヘッダーを許可（FastAPI 側と同一設定）
         config.setAllowedMethods(List.of("*"));
         config.setAllowedHeaders(List.of("*"));
 
