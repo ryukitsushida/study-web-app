@@ -8,11 +8,11 @@ RUN ./gradlew bootJar --no-daemon -x test
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
+RUN apk add --no-cache wget
 RUN adduser -D -u 1000 appuser
 COPY --from=build /app/build/libs/*.jar app.jar
 RUN chown -R appuser:appuser /app
 USER appuser
-RUN apk add --no-cache wget
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:8002/health || exit 1
 EXPOSE 8002
