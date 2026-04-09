@@ -8,3 +8,4 @@ ruff
 pytest
 pytest-asyncio
 httpx
+testcontainers[postgres]

@@ -22,26 +22,35 @@ applyTo: "backend/**"
 ## ② ディレクトリ構成
 
 ```
-backend/fastapi/app/
-├── main.py          # アプリ初期化、CORS、例外ハンドラ
-├── database.py      # AsyncEngine / AsyncSession / Base
-├── core/
-│   └── config.py    # BaseSettings による環境変数管理
-├── models/
-│   └── models.py    # SQLAlchemy ORM モデル (Mapped 型)
-├── schemas/
-│   └── <resource>/
-│       ├── base.py      # 共通スキーマ
-│       ├── request.py   # リクエストスキーマ
-│       └── response.py  # レスポンススキーマ
-├── crud/
-│   └── <resource>.py    # DB 操作 (CRUD クラス)
-├── services/
-│   └── <resource>.py    # ビジネスロジック (Service クラス)
-├── routers/
-│   └── <resource>.py    # APIRouter エンドポイント
-└── exceptions/
-    └── __init__.py      # カスタム例外
+backend/fastapi/
+├── app/
+│   ├── main.py          # アプリ初期化、CORS、例外ハンドラ
+│   ├── database.py      # AsyncEngine / AsyncSession / Base
+│   ├── core/
+│   │   └── config.py    # BaseSettings による環境変数管理
+│   ├── models/
+│   │   └── models.py    # SQLAlchemy ORM モデル (Mapped 型)
+│   ├── schemas/
+│   │   └── <resource>/
+│   │       ├── base.py      # 共通スキーマ
+│   │       ├── request.py   # リクエストスキーマ
+│   │       └── response.py  # レスポンススキーマ
+│   ├── crud/
+│   │   └── <resource>.py    # DB 操作 (CRUD クラス)
+│   ├── services/
+│   │   └── <resource>.py    # ビジネスロジック (Service クラス)
+│   ├── routers/
+│   │   └── <resource>.py    # APIRouter エンドポイント
+│   └── exceptions/
+│       └── __init__.py      # カスタム例外
+└── tests/
+    ├── conftest.py          # 共通フィクスチャ (Testcontainers PostgreSQL)
+    ├── crud/
+    │   └── test_<resource>.py
+    ├── services/
+    │   └── test_<resource>.py
+    └── routers/
+        └── test_<resource>.py
 ```
 
 - ファイル名: snake_case
@@ -64,8 +73,11 @@ backend/fastapi/app/
 ## ④ テスト方針
 
 - **テストフレームワーク**: pytest + pytest-asyncio + httpx (`AsyncClient`)
-- **単体テスト**: Service / CRUD 層のロジックを個別にテストする。DB はテスト用の PostgreSQL またはインメモリ SQLite を使用する
-- **API テスト**: `httpx.AsyncClient` を ASGI アプリ（FastAPI）に接続してエンドポイントを検証する
-- **テストファイル配置**: `tests/` ディレクトリに `test_<module>.py` で配置する
-- **フィクスチャ**: DB セッション・テストクライアントは `conftest.py` で共通定義する
+- **テスト用 DB**: Testcontainers (`testcontainers[postgres]`) で PostgreSQL コンテナを起動。本番と同じドライバ (asyncpg) でテストする
+- **CRUD テスト**: 実 DB（Testcontainers PostgreSQL）を使用し、テストごとにテーブルを再作成して独立性を保証する
+- **Service テスト**: CRUD を `unittest.mock.AsyncMock` でモックし、純粋な単体テストとして実行する
+- **API テスト**: `httpx.AsyncClient` を ASGI アプリ（FastAPI）に接続し、`dependency_overrides` で DB セッションを差し替えてエンドポイントを検証する
+- **テストファイル配置**: `tests/` ディレクトリに `app/` と同じサブディレクトリ構造で `test_<module>.py` を配置する
+- **フィクスチャ**: DB セッション・テストクライアントは `tests/conftest.py` で共通定義する
 - **カバレッジ目標**: Service 層 80% 以上、Router 層は主要パス (正常系 + 主要エラー系) をカバーする
+- **テスト実行**: `cd backend/fastapi && python -m pytest tests/ -v`
