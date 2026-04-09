@@ -1,6 +1,6 @@
 # TODO App
 
-シンプルなCRUD操作のあるTODOアプリケーション
+シンプルな CRUD 操作のある TODO アプリケーション
 
 ## 技術スタック
 
@@ -11,16 +11,23 @@
 - Tailwind CSS
 - ESLint + Prettier
 
-### バックエンド
+### バックエンド（FastAPI）
 
 - FastAPI
-- SQLAlchemy 2.0
-- Alembic (DBマイグレーション)
+- SQLAlchemy 2.0 (async)
+- Alembic (DB マイグレーション)
 - Ruff (リンター/フォーマッター)
+
+### バックエンド（Spring Boot）
+
+- Spring Boot 3.4
+- Spring Data JPA (Hibernate)
+- Gradle 8.12
+- JUnit 5 + Mockito + Testcontainers (テスト)
 
 ### データベース
 
-- PostgreSQL 16
+- PostgreSQL 16（FastAPI / Spring Boot で共有）
 
 ## 開発環境のセットアップ
 
@@ -28,14 +35,29 @@
 
 - Node.js 20.9.0+
 - Python 3.13+
+- Java 17+
 - Docker & Docker Compose
 
 ### 1. バックエンド + DB の起動
 
+Docker Compose の **profiles** で、起動するバックエンドを選択します。
+
 ```bash
-# Docker Composeでバックエンドとデータベースを起動（マイグレーション自動実行）
-docker compose up -d
+# FastAPI で起動
+docker compose --profile fastapi up -d
+
+# Spring Boot で起動
+docker compose --profile springboot up -d
+
+# 両方同時に起動（FastAPI: 8000, Spring Boot: 8002）
+docker compose --profile fastapi --profile springboot up -d
+
+# 停止
+docker compose --profile fastapi down
+docker compose --profile springboot down
 ```
+
+> **NOTE:** DB は常に起動します。FastAPI と Spring Boot は同じ PostgreSQL（todo_db）を共有します。
 
 ### 2. フロントエンドの起動
 
@@ -52,11 +74,24 @@ cp .env.local.example .env.local
 npm run dev
 ```
 
+フロントエンドの接続先を切り替えるには `.env.local` の `NEXT_PUBLIC_API_URL` を変更します。
+
+```bash
+# FastAPI に接続（デフォルト）
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+
+# Spring Boot に接続
+NEXT_PUBLIC_API_URL=http://localhost:8002/api
+```
+
 ### 3. アクセス
 
-- フロントエンド: http://localhost:3000
-- バックエンドAPI: http://localhost:8000
-- API ドキュメント: http://localhost:8000/docs
+| サービス             | URL                        |
+| -------------------- | -------------------------- |
+| フロントエンド       | http://localhost:3000      |
+| FastAPI              | http://localhost:8000      |
+| FastAPI ドキュメント | http://localhost:8000/docs |
+| Spring Boot API      | http://localhost:8002      |
 
 ## 開発コマンド
 
@@ -75,7 +110,7 @@ npm run lint
 npx prettier --write .
 ```
 
-### バックエンド
+### バックエンド（FastAPI）
 
 ```bash
 cd backend/fastapi
@@ -94,56 +129,83 @@ alembic upgrade head
 python -m pytest tests/ -v
 ```
 
+### バックエンド（Spring Boot）
+
+```bash
+cd backend/springboot
+
+# ビルド（テストなし）
+./gradlew build -x test
+
+# テスト（Docker 起動が必要）
+./gradlew test
+
+# ローカル実行
+./gradlew bootRun
+```
+
+> **NOTE:** DB マイグレーションは FastAPI 側の Alembic で管理します。
+> Spring Boot 側では `spring.jpa.hibernate.ddl-auto=none` としており、スキーマ変更は行いません。
+
 ## プロジェクト構造
 
 ```
 .
 ├── backend/
-│   └── fastapi/
-│       ├── app/
-│       │   ├── main.py          # FastAPIアプリケーション
-│       │   ├── database.py      # DB接続
-│       │   ├── core/
-│       │   │   └── config.py    # 設定
-│       │   ├── crud/
-│       │   │   └── todo.py      # DB操作
-│       │   ├── exceptions/      # 例外定義
-│       │   ├── models/
-│       │   │   └── models.py    # SQLAlchemyモデル
-│       │   ├── routers/
-│       │   │   └── todos.py     # TODOエンドポイント
-│       │   ├── schemas/
-│       │   │   └── todo/        # Pydanticスキーマ
-│       │   │       ├── base.py
-│       │   │       ├── request.py
-│       │   │       └── response.py
-│       │   └── services/
-│       │       └── todo.py      # ビジネスロジック
-│       ├── tests/               # テスト (Testcontainers PostgreSQL)
-│       │   ├── conftest.py      # 共通フィクスチャ
-│       │   ├── crud/            # CRUD 層テスト
-│       │   ├── services/        # Service 層テスト
-│       │   └── routers/         # Router 層テスト
-│       ├── alembic/             # マイグレーション
-│       ├── alembic.ini
-│       ├── entrypoint.sh
-│       ├── Dockerfile           # ECSデプロイ用
-│       ├── requirements.txt
-│       └── pyproject.toml       # Ruff設定
+│   ├── fastapi/
+│   │   ├── app/
+│   │   │   ├── main.py          # FastAPI アプリケーション
+│   │   │   ├── database.py      # DB 接続
+│   │   │   ├── core/
+│   │   │   │   └── config.py    # 設定
+│   │   │   ├── crud/
+│   │   │   │   └── todo.py      # DB 操作
+│   │   │   ├── exceptions/      # 例外定義
+│   │   │   ├── models/
+│   │   │   │   └── models.py    # SQLAlchemy モデル
+│   │   │   ├── routers/
+│   │   │   │   └── todos.py     # TODO エンドポイント
+│   │   │   ├── schemas/
+│   │   │   │   └── todo/        # Pydantic スキーマ
+│   │   │   │       ├── base.py
+│   │   │   │       ├── request.py
+│   │   │   │       └── response.py
+│   │   │   └── services/
+│   │   │       └── todo.py      # ビジネスロジック
+│   │   ├── tests/               # テスト (Testcontainers PostgreSQL)
+│   │   │   ├── conftest.py
+│   │   │   ├── crud/
+│   │   │   ├── services/
+│   │   │   └── routers/
+│   │   ├── alembic/             # マイグレーション
+│   │   ├── Dockerfile
+│   │   └── requirements.txt
+│   └── springboot/
+│       ├── src/main/java/com/example/todoapi/
+│       │   ├── TodoApiApplication.java
+│       │   ├── config/          # CORS 設定
+│       │   ├── controller/      # REST エンドポイント
+│       │   ├── dto/             # リクエスト/レスポンス DTO
+│       │   ├── entity/          # JPA エンティティ
+│       │   ├── exception/       # 例外処理
+│       │   ├── repository/      # Spring Data JPA
+│       │   └── service/         # ビジネスロジック
+│       ├── src/test/            # テスト (Testcontainers PostgreSQL)
+│       ├── build.gradle
+│       └── Dockerfile
 ├── frontend/
 │   ├── src/
 │   │   ├── app/                 # Next.js App Router
-│   │   ├── components/          # Reactコンポーネント
+│   │   ├── components/          # React コンポーネント
 │   │   ├── lib/                 # API クライアント
-│   │   └── types/               # TypeScript型定義
+│   │   └── types/               # TypeScript 型定義
 │   ├── .prettierrc
 │   └── eslint.config.mjs
 ├── infra/                       # Terraform (AWS)
-│   ├── 00-tfstate/              # Terraform state 管理用 S3
-│   ├── 01-pre/                  # 事前準備（ECR）
-│   └── 02-main/                 # メインインフラ（VPC, ECS, ALB）
-├── docker-compose.yml           # バックエンド + DB
-├── .vscode/                     # エディタ設定
+│   ├── 00-tfstate/
+│   ├── 01-pre/
+│   └── 02-main/
+├── docker-compose.yml
 └── README.md
 ```
 
