@@ -28,6 +28,7 @@ services:
       - PORT=8000
     volumes:
       - ./backend/hono/src:/app/src
+      - hono_generated:/app/src/generated
     command: sh -c "npx prisma generate && exec npx tsx src/index.ts"
     depends_on:
       db:
@@ -55,3 +56,4 @@ services:
 
 volumes:
   postgres_data:
+  hono_generated:

@@ -16,7 +16,7 @@ beforeAll(async () => {
   const setupAdapter = new PrismaPg({ connectionString: databaseUrl });
   const setupPrisma = new PrismaClient({ adapter: setupAdapter });
 
-  await setupPrisma.$executeRawUnsafe(`
+  await setupPrisma.$executeRaw`
     CREATE TABLE IF NOT EXISTS todos (
       id SERIAL PRIMARY KEY,
       title VARCHAR(255) NOT NULL,
@@ -25,14 +25,11 @@ beforeAll(async () => {
       created_at TIMESTAMP(6) NOT NULL DEFAULT now(),
       updated_at TIMESTAMP(6) NOT NULL DEFAULT now()
     )
-  `);
-  await setupPrisma.$executeRawUnsafe(
-    `CREATE INDEX IF NOT EXISTS ix_todos_id ON todos (id)`,
-  );
+  `;
+  await setupPrisma.$executeRaw`CREATE INDEX IF NOT EXISTS ix_todos_id ON todos (id)`;
   await setupPrisma.$disconnect();
 
   // テスト用 PrismaClient をグローバルに保持
-  process.env.TEST_DATABASE_URL = databaseUrl;
   const adapter = new PrismaPg({ connectionString: databaseUrl });
   testPrisma = new PrismaClient({ adapter });
 });
