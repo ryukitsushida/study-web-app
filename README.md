@@ -141,6 +141,9 @@ python -m pytest tests/ -v
 ```bash
 cd backend/hono
 
+# 依存パッケージのインストール（postinstall で prisma generate が自動実行されます）
+npm install
+
 # ローカル開発サーバー（ホットリロード）
 npm run dev
 

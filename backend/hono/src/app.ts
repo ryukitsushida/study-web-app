@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { PrismaClient } from "./generated/prisma/client.js";
+import { env } from "./env.js";
 import { todos } from "./routes/todos.js";
 import { errorHandler } from "./middleware/error-handler.js";
 
@@ -24,9 +25,7 @@ export function createApp(db: PrismaClient) {
   app.use(
     "*",
     cors({
-      origin: (process.env.ALLOWED_ORIGINS ?? "http://localhost:3000")
-        .split(",")
-        .map((s) => s.trim()),
+      origin: env.allowedOrigins,
     }),
   );
 
