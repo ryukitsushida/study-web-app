@@ -42,6 +42,8 @@
 
 Docker Compose の **profiles** で、起動するバックエンドを選択します。
 
+FastAPI と Hono は **同じポート（8000）** で動かす想定のため、バックエンドは **どちらか片方だけ** 起動してください。
+
 ```bash
 # FastAPI で起動
 docker compose --profile fastapi up -d
@@ -49,13 +51,12 @@ docker compose --profile fastapi up -d
 # Hono で起動
 docker compose --profile hono up -d
 
-# 両方同時に起動（FastAPI: 8000, Hono: 8001）
-docker compose --profile fastapi --profile hono up -d
-
 # 停止
 docker compose --profile fastapi down
 docker compose --profile hono down
 ```
+
+切り替える場合は、先に起動中のバックエンドを停止してからもう一方を起動してください（ポート 8000 が衝突します）。
 
 > **NOTE:** DB は常に起動します。FastAPI と Hono は同じ PostgreSQL（todo_db）を共有します。
 
@@ -77,11 +78,9 @@ npm run dev
 フロントエンドの接続先を切り替えるには `.env.local` の `NEXT_PUBLIC_API_URL` を変更します。
 
 ```bash
-# FastAPI に接続（デフォルト）
+# FastAPI / Hono のどちらに接続する場合でも同じ
+# （起動しているバックエンドが http://localhost:8000 で待ち受けます）
 NEXT_PUBLIC_API_URL=http://localhost:8000/api
-
-# Hono に接続
-NEXT_PUBLIC_API_URL=http://localhost:8001/api
 ```
 
 ### 3. アクセス
@@ -89,9 +88,8 @@ NEXT_PUBLIC_API_URL=http://localhost:8001/api
 | サービス             | URL                        |
 | -------------------- | -------------------------- |
 | フロントエンド       | http://localhost:3000      |
-| FastAPI              | http://localhost:8000      |
+| FastAPI / Hono API   | http://localhost:8000      |
 | FastAPI ドキュメント | http://localhost:8000/docs |
-| Hono API             | http://localhost:8001      |
 
 ## 開発コマンド
 
